@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prode de Fútbol</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --verde:#1a7a4a;--verde-dark:#145c38;--verde-light:#e8f5ee;
+  --cesped:#0f5c32;--cesped-dark:#0a3d22;--gold:#f0b429;
+  --red:#d93025;--red-light:#fce8e6;--yellow-light:#fef7e0;
+  --bg:#f4f7f5;--surface:#fff;--text:#1a2e1f;--text-muted:#5a7a65;
+  --border:#d0e4d8;--shadow:0 2px 8px rgba(15,92,50,.08);
+  --radius:10px;--radius-lg:16px;
+}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,var(--cesped-dark),var(--cesped));color:white;padding:1.75rem 1rem 1.25rem;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 40px,transparent 40px,transparent 80px)}
+.header h1{font-family:'Barlow Condensed',sans-serif;font-size:2.2rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;position:relative}
+.header h1 span{color:var(--gold)}
+.header p{font-size:.88rem;opacity:.7;margin-top:.3rem;position:relative}
+.fecha-badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 14px;font-size:.82rem;font-family:'Barlow Condensed',sans-serif;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-top:.6rem;position:relative}
+.container{max-width:680px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.tab{flex:1;padding:12px 8px;border:none;background:transparent;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;transition:all .18s}
+.tab.active{background:var(--verde);color:white}
+.tab:hover:not(.active){background:var(--verde-light);color:var(--verde-dark)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:150px}
+.field label{font-size:.82rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.field input{border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:1rem;font-family:'Barlow',sans-serif;color:var(--text);background:var(--bg);width:100%;transition:border-color .15s,box-shadow .15s}
+.field input:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px rgba(26,122,74,.12);background:white}
+.field-row{display:flex;gap:12px;flex-wrap:wrap}
+.partido-row{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:7px}
+.equipo{flex:1;font-size:.92rem;font-weight:500}
+.equipo.left{text-align:right}.equipo.right{text-align:left}
+.score-input{width:50px;border:1.5px solid var(--border);border-radius:8px;padding:5px 4px;font-size:1.1rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-align:center;color:var(--text);background:white;-moz-appearance:textfield}
+.score-input::-webkit-inner-spin-button,.score-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.score-input:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 2px rgba(26,122,74,.15)}
+.score-input:disabled{opacity:.4;cursor:not-allowed;background:#eee}
+.dash{color:var(--text-muted);font-size:1.1rem}
+.btn{padding:10px 20px;border-radius:var(--radius);font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;border:1.5px solid transparent;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--verde);color:white;border-color:var(--verde-dark)}
+.btn-primary:hover:not(:disabled){background:var(--verde-dark)}
+.badge{background:var(--verde-light);color:var(--verde-dark);border:1px solid #a8d5b8;border-radius:20px;padding:3px 10px;font-size:.82rem;font-weight:500;display:inline-flex;align-items:center;gap:5px}
+.alert{padding:10px 14px;border-radius:var(--radius);font-size:.92rem;margin-bottom:1rem;display:none;align-items:center;gap:8px;font-weight:500}
+.alert.show{display:flex}
+.alert-success{background:var(--verde-light);color:var(--verde-dark);border:1px solid #a8d5b8}
+.alert-error{background:var(--red-light);color:var(--red);border:1px solid #f5b8b4}
+.alert-warning{background:var(--yellow-light);color:#8a6200;border:1px solid #fde29a}
+.estado-cerrado{background:var(--yellow-light);color:#7a5500;border:1px solid #fde29a;border-radius:var(--radius);padding:10px 14px;font-size:.92rem;margin-bottom:1rem;display:none;align-items:center;gap:8px;font-weight:500}
+.estado-cerrado.show{display:flex}
+.loading{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-size:.95rem}
+.loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--verde);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sin-fecha{text-align:center;padding:3rem 1rem;color:var(--text-muted)}
+/* Pago card */
+.pago-card{background:linear-gradient(135deg,#e8f5ee,#f4f7f5);border:1.5px solid #a8d5b8;border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem}
+.pago-card h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;color:var(--verde-dark);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+.precio-badge{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:700;color:var(--verde);display:block;margin-bottom:.75rem}
+.pago-metodo{display:flex;flex-direction:column;gap:8px}
+.pago-item{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:.9rem}
+.pago-item strong{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:3px}
+.pago-item a{color:var(--verde);text-decoration:none;font-weight:500}
+/* Tabla */
+.tabla-pos{width:100%;border-collapse:collapse;font-size:.93rem}
+.tabla-pos th{padding:8px 12px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border)}
+.tabla-pos td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.tabla-pos tr:last-child td{border-bottom:none}
+.tabla-pos tr.top1 td{background:#fff8e6}
+.tabla-pos tr.top2 td{background:#f6f7f8}
+.tabla-pos tr.top3 td{background:#f4f0eb}
+.pts{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;color:var(--verde);text-align:right}
+.no-pagado{opacity:.45;font-style:italic}
+/* Pozo banner */
+.pozo-banner{background:linear-gradient(135deg,#1a3a1f,#1a7a4a);color:white;border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;text-align:center}
+.pozo-banner .label{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;font-family:'Barlow Condensed',sans-serif;font-weight:700}
+.pozo-banner .monto{font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:700;color:var(--gold);line-height:1.1}
+.pozo-banner .sub{font-size:.8rem;opacity:.65;margin-top:.3rem}
+@media(max-width:520px){.equipo{font-size:.78rem}.score-input{width:42px}.field-row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>⚽ Prode de <span>Fútbol</span></h1>
+  <p>Predecí los resultados y competí con tus amigos</p>
+  <div class="fecha-badge" id="headerFecha">Cargando...</div>
+</div>
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="cambiarTab('pronostico')" id="tabPronostico">Mis pronósticos</button>
+    <button class="tab" onclick="cambiarTab('pago')" id="tabPago">Cómo pagar</button>
+    <button class="tab" onclick="cambiarTab('tabla')" id="tabTabla">Tabla</button>
+  </div>
+
+  <!-- PANEL PRONÓSTICO -->
+  <div id="panelPronostico" class="panel active">
+    <div id="alerta" class="alert"></div>
+    <div id="estadoCerrado" class="estado-cerrado">⚠ Los pronósticos están cerrados para esta fecha.</div>
+    <div id="loadingJugador" class="loading"><div class="loading-spinner"></div>Cargando...</div>
+    <div id="sinFecha" class="sin-fecha" style="display:none">No hay ninguna fecha activa. ¡Volvé pronto!</div>
+    <div id="contenidoJugador" style="display:none">
+      <div class="card">
+        <div class="card-title">Tus datos</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="nombre">Nombre completo</label>
+            <input type="text" id="nombre" placeholder="Ej: Juan Pérez" autocomplete="off">
+          </div>
+          <div class="field" style="max-width:170px">
+            <label for="dni">Últimos 4 dígitos DNI</label>
+            <input type="number" id="dni" placeholder="1234" max="9999">
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Partidos <span class="badge" id="contadorBadge">0 / 0</span></div>
+        <div id="partidos"></div>
+      </div>
+      <button class="btn btn-primary" onclick="guardarPronostico()" id="btnGuardar">💾 Guardar pronóstico</button>
+    </div>
+  </div>
+
+  <!-- PANEL PAGO -->
+  <div id="panelPago" class="panel">
+    <div id="loadingPago" class="loading"><div class="loading-spinner"></div></div>
+    <div id="contenidoPago" style="display:none">
+      <div id="pozoBanner" class="pozo-banner" style="display:none">
+        <div class="label">💰 Pozo acumulado</div>
+        <div class="monto" id="pozoMonto">$0</div>
+        <div class="sub">+ lo recaudado en esta fecha</div>
+      </div>
+      <div class="pago-card">
+        <h3>💳 Cómo pagar</h3>
+        <div class="precio-badge" id="precioBadge">$0</div>
+        <div class="pago-metodo" id="pagoMetodos"></div>
+      </div>
+      <div class="card" style="font-size:.88rem;color:var(--text-muted)">
+        ℹ Una vez que realizás el pago, el administrador lo confirma y tu pronóstico queda habilitado en la tabla.
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL TABLA -->
+  <div id="panelTabla" class="panel">
+    <div class="card">
+      <div class="card-title">Tabla de posiciones <span class="badge" id="cantBadge">0 jugadores</span></div>
+      <div id="loadingTabla" class="loading" style="padding:1.5rem"><div class="loading-spinner"></div></div>
+      <table class="tabla-pos" id="tablaPos" style="display:none">
+        <thead><tr><th>Pos</th><th>Jugador</th><th>DNI</th><th style="text-align:right">Pts</th></tr></thead>
+        <tbody id="tablaBody"></tbody>
+      </table>
+      <div id="sinResultados" style="display:none;text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.9rem">Los resultados aún no fueron cargados.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDx4zVBz8rs2IbSOLc6RX8ae0aycYZlUD8bTSukT5Pbz5doj-N2jvcJzM5PFqV_5YAOw/exec";
+
+let fechaActiva = null;
+let bloqueado   = false;
+
+async function api(params) {
+  const qs = new URLSearchParams(params).toString();
+  const r  = await fetch(SCRIPT_URL + "?" + qs);
+  return r.json();
+}
+async function apiPost(body) {
+  const r = await fetch(SCRIPT_URL, {
+    method:"POST", body: JSON.stringify(body),
+    headers:{"Content-Type":"application/json"}
+  });
+  return r.json();
+}
+
+function mostrarAlerta(msg, tipo) {
+  const el = document.getElementById("alerta");
+  el.className = "alert alert-" + tipo + " show";
+  el.textContent = msg;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("show"), 3500);
+}
+
+function cambiarTab(t) {
+  ["pronostico","pago","tabla"].forEach(id => {
+    document.getElementById("panel" + id[0].toUpperCase() + id.slice(1)).classList.remove("active");
+    document.getElementById("tab"   + id[0].toUpperCase() + id.slice(1)).classList.remove("active");
+  });
+  document.getElementById("panel" + t[0].toUpperCase() + t.slice(1)).classList.add("active");
+  document.getElementById("tab"   + t[0].toUpperCase() + t.slice(1)).classList.add("active");
+  if (t === "tabla") cargarTabla();
+  if (t === "pago")  mostrarPago();
+}
+
+async function cargarFechaActiva() {
+  try {
+    fechaActiva = await api({ action: "getFechaActiva" });
+    if (!fechaActiva || !fechaActiva.id) {
+      document.getElementById("loadingJugador").style.display = "none";
+      document.getElementById("sinFecha").style.display = "block";
+      document.getElementById("headerFecha").textContent = "Sin fecha activa";
+      return;
+    }
+    bloqueado = fechaActiva.bloqueado === true || fechaActiva.bloqueado === "TRUE";
+    document.getElementById("headerFecha").textContent = fechaActiva.nombre;
+    document.getElementById("loadingJugador").style.display = "none";
+    document.getElementById("contenidoJugador").style.display = "block";
+    if (bloqueado) document.getElementById("estadoCerrado").classList.add("show");
+    renderPartidos();
+  } catch(e) {
+    document.getElementById("loadingJugador").innerHTML = "Error al conectar.";
+  }
+}
+
+function renderPartidos() {
+  const div = document.getElementById("partidos");
+  div.innerHTML = "";
+  const partidos = typeof fechaActiva.partidos === "string"
+    ? JSON.parse(fechaActiva.partidos) : fechaActiva.partidos || [];
+  partidos.forEach((p, i) => {
+    const row = document.createElement("div");
+    row.className = "partido-row";
+    row.innerHTML = `
+      <span class="equipo left">${p[0]}</span>
+      <input class="score-input" type="number" min="0" id="pA${i}" placeholder="–" ${bloqueado?"disabled":""} oninput="actualizarContador()">
+      <span class="dash">–</span>
+      <input class="score-input" type="number" min="0" id="pB${i}" placeholder="–" ${bloqueado?"disabled":""} oninput="actualizarContador()">
+      <span class="equipo right">${p[1]}</span>`;
+    div.appendChild(row);
+  });
+  if (bloqueado) document.getElementById("btnGuardar").disabled = true;
+  actualizarContador();
+}
+
+function actualizarContador() {
+  if (!fechaActiva) return;
+  const partidos = typeof fechaActiva.partidos === "string"
+    ? JSON.parse(fechaActiva.partidos) : fechaActiva.partidos || [];
+  let ok = 0;
+  partidos.forEach((_,i) => {
+    if (document.getElementById("pA"+i)?.value !== "" &&
+        document.getElementById("pB"+i)?.value !== "") ok++;
+  });
+  document.getElementById("contadorBadge").textContent = ok + " / " + partidos.length + " completos";
+}
+
+async function guardarPronostico() {
+  if (bloqueado) { mostrarAlerta("Los pronósticos están cerrados.", "warning"); return; }
+  const nombre = document.getElementById("nombre").value.trim();
+  const dni    = document.getElementById("dni").value.trim();
+  if (!nombre)          { mostrarAlerta("Ingresá tu nombre completo.", "error"); return; }
+  if (dni.length !== 4) { mostrarAlerta("Ingresá los últimos 4 dígitos del DNI.", "error"); return; }
+  const partidos = typeof fechaActiva.partidos === "string"
+    ? JSON.parse(fechaActiva.partidos) : fechaActiva.partidos || [];
+  let datos = []; let incompleto = false;
+  partidos.forEach((_,i) => {
+    const a = document.getElementById("pA"+i).value;
+    const b = document.getElementById("pB"+i).value;
+    if (a===""||b==="") incompleto = true;
+    datos.push([a,b]);
+  });
+  if (incompleto) { mostrarAlerta("Completá todos los partidos.", "error"); return; }
+  const btn = document.getElementById("btnGuardar");
+  btn.disabled = true; btn.textContent = "Guardando...";
+  try {
+    const r = await apiPost({ action:"guardarPronostico", fechaId:fechaActiva.id, nombre, dni, datos });
+    if (r.ok) mostrarAlerta("✔ Pronóstico guardado. ¡Mucha suerte!", "success");
+    else      mostrarAlerta("Error: " + r.error, "error");
+  } catch(e) { mostrarAlerta("Error al guardar.", "error"); }
+  finally { btn.disabled = false; btn.textContent = "💾 Guardar pronóstico"; }
+}
+
+function mostrarPago() {
+  if (!fechaActiva) return;
+  document.getElementById("loadingPago").style.display  = "none";
+  document.getElementById("contenidoPago").style.display = "block";
+  const precio = fechaActiva.precio || 0;
+  const pozoPrevio = Number(fechaActiva.pozoPrevio || 0);
+  document.getElementById("precioBadge").textContent = "$" + Number(precio).toLocaleString("es-AR");
+  if (pozoPrevio > 0) {
+    document.getElementById("pozoBanner").style.display = "block";
+    document.getElementById("pozoMonto").textContent = "$" + pozoPrevio.toLocaleString("es-AR");
+  }
+  const alias  = fechaActiva.alias  || "";
+  const linkMP = fechaActiva.linkMP || "";
+  let html = "";
+  if (alias)  html += `<div class="pago-item"><strong>Transferencia / CVU</strong>${alias}</div>`;
+  if (linkMP) html += `<div class="pago-item"><strong>Mercado Pago</strong><a href="${linkMP}" target="_blank">Pagar con Mercado Pago →</a></div>`;
+  html += `<div class="pago-item"><strong>Efectivo</strong>Contactá al organizador</div>`;
+  document.getElementById("pagoMetodos").innerHTML = html;
+}
+
+async function cargarTabla() {
+  if (!fechaActiva) return;
+  document.getElementById("loadingTabla").style.display  = "block";
+  document.getElementById("tablaPos").style.display      = "none";
+  document.getElementById("sinResultados").style.display = "none";
+  const resultados = typeof fechaActiva.resultados === "string"
+    ? JSON.parse(fechaActiva.resultados || "[]") : fechaActiva.resultados || [];
+  if (!resultados || resultados.length === 0) {
+    document.getElementById("loadingTabla").style.display  = "none";
+    document.getElementById("sinResultados").style.display = "block";
+    return;
+  }
+  try {
+    const prons = await api({ action:"getPronosticos", fechaId: fechaActiva.id });
+    const partidos = typeof fechaActiva.partidos === "string"
+      ? JSON.parse(fechaActiva.partidos) : fechaActiva.partidos || [];
+    const tabla = prons.map(j => {
+      const datos = typeof j.datos === "string" ? JSON.parse(j.datos) : j.datos || [];
+      let puntos = 0;
+      datos.forEach((d,i) => {
+        const prA=parseInt(d[0]),prB=parseInt(d[1]);
+        const rA=parseInt(resultados[i]?.[0]),rB=parseInt(resultados[i]?.[1]);
+        if (prA===rA&&prB===rB) puntos+=3;
+        else if ((prA>prB&&rA>rB)||(prA<prB&&rA<rB)||(prA===prB&&rA===rB)) puntos+=1;
+      });
+      return { nombre:j.nombre, dni:j.dni, puntos, pagado: j.pagado===true||j.pagado==="TRUE" };
+    }).sort((a,b) => b.puntos-a.puntos);
+    const pagados = tabla.filter(j => j.pagado);
+    document.getElementById("cantBadge").textContent = pagados.length + " jugadores";
+    const medallas = ["🥇","🥈","🥉"];
+    document.getElementById("tablaBody").innerHTML = pagados.length === 0
+      ? '<tr><td colspan="4" style="text-align:center;padding:1.5rem;color:var(--text-muted)">Sin pronósticos pagos aún</td></tr>'
+      : pagados.map((j,i) => `<tr class="${i===0?"top1":i===1?"top2":i===2?"top3":""}">
+          <td>${medallas[i]||i+1}</td><td>${j.nombre}</td>
+          <td style="color:var(--text-muted);font-size:.88rem">${j.dni}</td>
+          <td class="pts">${j.puntos}</td></tr>`).join("");
+    document.getElementById("loadingTabla").style.display = "none";
+    document.getElementById("tablaPos").style.display     = "table";
+  } catch(e) { document.getElementById("loadingTabla").innerHTML = "Error al cargar."; }
+}
+
+cargarFechaActiva();
+</script>
+</body>
+</html>

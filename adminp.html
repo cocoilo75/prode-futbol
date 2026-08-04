@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Prode de Fútbol</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --verde:#1a7a4a;--verde-dark:#145c38;--verde-light:#e8f5ee;
+  --cesped:#0f5c32;--cesped-dark:#0a3d22;--gold:#f0b429;
+  --red:#d93025;--red-light:#fce8e6;--yellow-light:#fef7e0;
+  --blue:#1a6ebd;--blue-light:#e8f0fb;
+  --bg:#f4f7f5;--surface:#fff;--text:#1a2e1f;--text-muted:#5a7a65;
+  --border:#d0e4d8;--shadow:0 2px 8px rgba(15,92,50,.08);
+  --radius:10px;--radius-lg:16px;
+}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--cesped-dark),var(--cesped))}
+.login-card{background:white;border-radius:var(--radius-lg);padding:2.5rem 2rem;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center}
+.login-card h2{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:.3rem}
+.login-card p{font-size:.88rem;color:var(--text-muted);margin-bottom:1.5rem}
+.login-card input{width:100%;border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:1rem;font-family:'Barlow',sans-serif;margin-bottom:1rem;color:var(--text);letter-spacing:.1em}
+.login-card input:focus{outline:none;border-color:var(--verde)}
+#loginError{color:var(--red);font-size:.85rem;margin-bottom:.75rem;display:none}
+#appShell{display:none}
+.header{background:linear-gradient(135deg,var(--cesped-dark),var(--cesped));color:white;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.header p{font-size:.82rem;opacity:.65;margin-top:2px}
+.btn-logout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:white;border-radius:var(--radius);padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.container{max-width:820px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.25rem;box-shadow:var(--shadow);flex-wrap:wrap}
+.tab{flex:1;min-width:80px;padding:11px 6px;border:none;background:transparent;font-family:'Barlow Condensed',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;transition:all .18s}
+.tab.active{background:var(--verde);color:white}
+.tab:hover:not(.active){background:var(--verde-light);color:var(--verde-dark)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:.82rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select{border:1.5px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:.95rem;font-family:'Barlow',sans-serif;color:var(--text);background:var(--bg);width:100%}
+.field input:focus,.field select:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px rgba(26,122,74,.12);background:white}
+.field-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1rem}
+.field-row .field{flex:1;min-width:140px}
+.btn{padding:9px 18px;border-radius:var(--radius);font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;border:1.5px solid transparent;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--verde);color:white;border-color:var(--verde-dark)}
+.btn-primary:hover:not(:disabled){background:var(--verde-dark)}
+.btn-danger{background:var(--red);color:white;border-color:#b52820}
+.btn-danger:hover:not(:disabled){background:#b52820}
+.btn-neutral{background:white;color:var(--text);border-color:var(--border)}
+.btn-neutral:hover:not(:disabled){background:var(--bg)}
+.btn-sm{padding:5px 12px;font-size:.85rem}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem}
+.alert{padding:10px 14px;border-radius:var(--radius);font-size:.92rem;margin-bottom:1rem;display:none;align-items:center;gap:8px;font-weight:500}
+.alert.show{display:flex}
+.alert-success{background:var(--verde-light);color:var(--verde-dark);border:1px solid #a8d5b8}
+.alert-error{background:var(--red-light);color:var(--red);border:1px solid #f5b8b4}
+.alert-warning{background:var(--yellow-light);color:#8a6200;border:1px solid #fde29a}
+.alert-info{background:var(--blue-light);color:var(--blue);border:1px solid #b0ccf0}
+.badge{border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:inline-flex;align-items:center;gap:4px}
+.badge-green{background:var(--verde-light);color:var(--verde-dark);border:1px solid #a8d5b8}
+.badge-gray{background:#f0f0f0;color:#888;border:1px solid #ddd}
+.badge-blue{background:var(--blue-light);color:var(--blue);border:1px solid #b0ccf0}
+.badge-red{background:var(--red-light);color:var(--red);border:1px solid #f5b8b4}
+.badge-gold{background:#fff8e6;color:#7a5500;border:1px solid #fde29a}
+/* Partido editor */
+.partido-editor{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px}
+.partido-editor input{flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.9rem;font-family:'Barlow',sans-serif;background:white;color:var(--text)}
+.partido-editor input:focus{outline:none;border-color:var(--verde)}
+.vs-label{font-size:.82rem;font-weight:700;color:var(--text-muted);flex-shrink:0;padding:0 4px}
+.btn-remove{background:none;border:none;color:var(--red);cursor:pointer;font-size:1.2rem;line-height:1;padding:2px 6px;border-radius:6px;flex-shrink:0}
+.btn-remove:hover{background:var(--red-light)}
+/* Score input */
+.partido-resultado{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px}
+.equipo-res{flex:1;font-size:.92rem;font-weight:500}
+.equipo-res.left{text-align:right}.equipo-res.right{text-align:left}
+.score-input{width:50px;border:1.5px solid var(--border);border-radius:8px;padding:5px 4px;font-size:1.1rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-align:center;color:var(--text);background:white;-moz-appearance:textfield}
+.score-input::-webkit-inner-spin-button,.score-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.score-input:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 2px rgba(26,122,74,.15)}
+.dash{color:var(--text-muted);font-size:1.1rem}
+/* Fechas list */
+.fecha-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:7px;flex-wrap:wrap}
+.fecha-item-info{flex:1;min-width:180px}
+.fecha-item-info strong{font-size:.95rem;display:block}
+.fecha-item-info span{font-size:.82rem;color:var(--text-muted)}
+/* Pagos */
+.pago-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pago-row:last-child{border-bottom:none}
+.pago-info{flex:1;min-width:140px}
+.pago-info strong{font-size:.93rem;display:block}
+.pago-info span{font-size:.82rem;color:var(--text-muted)}
+/* Tabla */
+.tabla-pos{width:100%;border-collapse:collapse;font-size:.93rem}
+.tabla-pos th{padding:7px 12px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid var(--border)}
+.tabla-pos td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.tabla-pos tr:last-child td{border-bottom:none}
+.tabla-pos tr.top1 td{background:#fff8e6}
+.tabla-pos tr.top2 td{background:#f6f7f8}
+.tabla-pos tr.top3 td{background:#f4f0eb}
+.pts{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;color:var(--verde);text-align:right}
+/* Pozo */
+.pozo-card{background:linear-gradient(135deg,#1a3a1f,#1a7a4a);color:white;border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.pozo-card .label{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;font-family:'Barlow Condensed',sans-serif;font-weight:700}
+.pozo-card .monto{font-family:'Barlow Condensed',sans-serif;font-size:2.2rem;font-weight:700;color:var(--gold);line-height:1}
+.pozo-card .sub{font-size:.78rem;opacity:.6;margin-top:.2rem}
+/* Premios */
+.premio-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px}
+.premio-row:last-child{border-bottom:none}
+.premio-label{font-size:.9rem;font-weight:500}
+.premio-monto{font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;color:var(--verde)}
+/* Historial */
+.hist-item{padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px}
+.hist-item strong{display:block;font-size:.95rem;margin-bottom:4px}
+.hist-item span{font-size:.82rem;color:var(--text-muted)}
+.loading{text-align:center;padding:2rem;color:var(--text-muted);font-size:.92rem}
+.loading-spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--verde);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+hr{border:none;border-top:1px solid var(--border);margin:1rem 0}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h2>⚙ Panel Admin</h2>
+    <p>Prode de Fútbol — acceso restringido</p>
+    <input type="password" id="passInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()">
+    <div id="loginError">Contraseña incorrecta</div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="login()">Ingresar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell">
+  <div class="header">
+    <div><h1>⚙ Admin — Prode</h1><p>Panel de administración</p></div>
+    <button class="btn-logout" onclick="logout()">Salir</button>
+  </div>
+  <div class="container">
+    <div id="alertaGlobal" class="alert"></div>
+    <div class="tabs">
+      <button class="tab active" onclick="cambiarTab('fechas')"     id="tabFechas">Fechas</button>
+      <button class="tab"        onclick="cambiarTab('nueva')"      id="tabNueva">Nueva</button>
+      <button class="tab"        onclick="cambiarTab('pagos')"      id="tabPagos">Pagos</button>
+      <button class="tab"        onclick="cambiarTab('resultados')" id="tabResultados">Resultados</button>
+      <button class="tab"        onclick="cambiarTab('tabla')"      id="tabTabla">Tabla</button>
+      <button class="tab"        onclick="cambiarTab('historial')"  id="tabHistorial">Historial</button>
+    </div>
+
+    <!-- FECHAS -->
+    <div id="panelFechas" class="panel active">
+      <div class="card">
+        <div class="card-title">Fechas creadas</div>
+        <div id="loadingFechas" class="loading"><div class="loading-spinner"></div></div>
+        <div id="listaFechas"></div>
+      </div>
+    </div>
+
+    <!-- NUEVA FECHA -->
+    <div id="panelNueva" class="panel">
+      <div class="card">
+        <div class="card-title">Crear nueva fecha</div>
+        <div class="field-row">
+          <div class="field" style="flex:2;min-width:200px">
+            <label>Nombre de la fecha</label>
+            <input type="text" id="nombreFecha" placeholder="Ej: Fecha 5 — Jornada europea">
+          </div>
+          <div class="field" style="max-width:140px">
+            <label>Precio de entrada ($)</label>
+            <input type="number" id="precioFecha" placeholder="1000">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Alias / CVU para transferencia</label>
+            <input type="text" id="aliasFecha" placeholder="mi.alias.mp">
+          </div>
+          <div class="field">
+            <label>Link Mercado Pago (opcional)</label>
+            <input type="text" id="linkMPFecha" placeholder="https://mpago.la/...">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="max-width:220px">
+            <label>Pozo acumulado de fecha anterior ($)</label>
+            <input type="number" id="pozoPrevioFecha" placeholder="0" value="0">
+          </div>
+        </div>
+        <hr>
+        <div class="card-title" style="margin-bottom:.75rem">
+          Partidos
+          <button class="btn btn-neutral btn-sm" onclick="agregarPartido()">+ Agregar partido</button>
+        </div>
+        <div id="partidosEditor"></div>
+        <hr>
+        <div class="btn-row" style="margin-top:0">
+          <button class="btn btn-primary" onclick="crearFecha()">💾 Crear fecha</button>
+          <button class="btn btn-neutral" onclick="limpiarFormulario()">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGOS -->
+    <div id="panelPagos" class="panel">
+      <div id="pozoCurrent" class="pozo-card" style="display:none">
+        <div>
+          <div class="label">💰 Pozo estimado esta fecha</div>
+          <div class="monto" id="pozoEstimado">$0</div>
+          <div class="sub" id="pozoSub"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="label">Premios estimados</div>
+          <div id="premiosEstimados" style="font-size:.85rem;margin-top:.5rem;line-height:1.8"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          Participantes
+          <span id="pagadosBadge" class="badge badge-green">0 pagados</span>
+        </div>
+        <div id="loadingPagos" class="loading"><div class="loading-spinner"></div></div>
+        <div id="listaPagos"></div>
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="panelResultados" class="panel">
+      <div class="card">
+        <div class="card-title">
+          Fecha activa
+          <span id="fechaActivaNombreRes" class="badge badge-green">—</span>
+        </div>
+        <div id="sinFechaActivaRes" style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.9rem;display:none">
+          No hay fecha activa. Activá una desde la pestaña Fechas.
+        </div>
+        <div id="contenidoResultados" style="display:none">
+          <div class="btn-row" style="margin-top:0;margin-bottom:1rem">
+            <button class="btn btn-danger btn-sm" onclick="bloquearFecha()">🔒 Cerrar apuestas</button>
+            <button class="btn btn-neutral btn-sm" onclick="desbloquearFecha()">🔓 Reabrir apuestas</button>
+          </div>
+          <div class="card-title">Resultados reales</div>
+          <div id="resultadosInputs"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="guardarResultados()">📊 Calcular tabla y premios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div id="panelTabla" class="panel">
+      <div class="card">
+        <div class="card-title">
+          Tabla de posiciones
+          <span id="tablaBadge" class="badge badge-gray">—</span>
+        </div>
+        <div id="loadingTabla" class="loading"><div class="loading-spinner"></div></div>
+        <table class="tabla-pos" id="tablaPos" style="display:none">
+          <thead><tr><th>Pos</th><th>Jugador</th><th>DNI</th><th>Aciertos</th><th style="text-align:right">Pts</th></tr></thead>
+          <tbody id="tablaBody"></tbody>
+        </table>
+        <div id="sinDatosTabla" style="display:none;text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.9rem"></div>
+      </div>
+      <!-- Premios -->
+      <div id="panelPremios" class="card" style="display:none">
+        <div class="card-title">🏆 Distribución de premios</div>
+        <div id="listaPremios"></div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="panelHistorial" class="panel">
+      <div class="card">
+        <div class="card-title">Historial de fechas</div>
+        <div id="loadingHistorial" class="loading"><div class="loading-spinner"></div></div>
+        <div id="listaHistorial"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDx4zVBz8rs2IbSOLc6RX8ae0aycYZlUD8bTSukT5Pbz5doj-N2jvcJzM5PFqV_5YAOw/exec";
+const ADMIN_PASS = "prode2025"; // ← cambiá esto
+
+let fechaActiva    = null;
+let todasFechas    = [];
+let contPart       = 0;
+let resultadoActual = null;
+
+async function api(params) {
+  const qs = new URLSearchParams(params).toString();
+  const r  = await fetch(SCRIPT_URL + "?" + qs);
+  return r.json();
+}
+async function apiPost(body) {
+  const r = await fetch(SCRIPT_URL, {
+    method:"POST", body:JSON.stringify(body),
+    headers:{"Content-Type":"application/json"}
+  });
+  return r.json();
+}
+
+// ── LOGIN ─────────────────────────────────────────────
+function login() {
+  if (document.getElementById("passInput").value === ADMIN_PASS) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("appShell").style.display    = "block";
+    iniciarApp();
+  } else {
+    document.getElementById("loginError").style.display = "block";
+  }
+}
+function logout() {
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("appShell").style.display    = "none";
+  document.getElementById("passInput").value = "";
+}
+
+async function iniciarApp() {
+  await cargarTodasFechas();
+  cargarFechaActivaAdmin();
+}
+
+// ── TABS ──────────────────────────────────────────────
+function cambiarTab(t) {
+  ["fechas","nueva","pagos","resultados","tabla","historial"].forEach(id => {
+    const cap = id[0].toUpperCase()+id.slice(1);
+    document.getElementById("panel"+cap).classList.remove("active");
+    document.getElementById("tab"+cap).classList.remove("active");
+  });
+  const cap = t[0].toUpperCase()+t.slice(1);
+  document.getElementById("panel"+cap).classList.add("active");
+  document.getElementById("tab"+cap).classList.add("active");
+  if (t==="pagos")    cargarPagos();
+  if (t==="tabla")    cargarTablaAdmin();
+  if (t==="historial")cargarHistorial();
+}
+
+function alerta(msg, tipo) {
+  const el = document.getElementById("alertaGlobal");
+  el.className = "alert alert-"+tipo+" show";
+  el.textContent = msg;
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove("show"), 4500);
+}
+
+// ── FECHAS ────────────────────────────────────────────
+async function cargarTodasFechas() {
+  document.getElementById("loadingFechas").style.display = "block";
+  document.getElementById("listaFechas").innerHTML = "";
+  try {
+    todasFechas = await api({ action:"getFechas" });
+    if (!Array.isArray(todasFechas)) todasFechas = [];
+    todasFechas.sort((a,b)=>(b.creadaEn||"")-(a.creadaEn||""));
+    document.getElementById("loadingFechas").style.display = "none";
+    if (todasFechas.length === 0) {
+      document.getElementById("listaFechas").innerHTML = '<p style="color:var(--text-muted);font-size:.9rem">No hay fechas creadas todavía.</p>';
+      return;
+    }
+    todasFechas.forEach(f => {
+      const activa = f.activa===true||f.activa==="TRUE";
+      const bloq   = f.bloqueado===true||f.bloqueado==="TRUE";
+      const fin    = f.finalizada===true||f.finalizada==="TRUE";
+      const div = document.createElement("div");
+      div.className = "fecha-item";
+      const partidos = typeof f.partidos==="string"?JSON.parse(f.partidos||"[]"):f.partidos||[];
+      div.innerHTML = `
+        <div class="fecha-item-info">
+          <strong>${f.nombre}</strong>
+          <span>${partidos.length} partidos · $${Number(f.precio||0).toLocaleString("es-AR")}
+          · ${activa?'<span class="badge badge-green">● Activa</span>':fin?'<span class="badge badge-blue">✓ Finalizada</span>':'<span class="badge badge-gray">Inactiva</span>'}
+          ${bloq?'<span class="badge badge-red" style="margin-left:4px">🔒</span>':''}
+          ${Number(f.pozoPrevio||0)>0?`<span class="badge badge-gold">Pozo: $${Number(f.pozoPrevio).toLocaleString("es-AR")}</span>`:''}
+          </span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${!activa?`<button class="btn btn-neutral btn-sm" onclick="activarFecha('${f.id}')">Activar</button>`:''}
+          ${activa ?`<button class="btn btn-neutral btn-sm" onclick="desactivarFecha('${f.id}')">Desactivar</button>`:''}
+          <button class="btn btn-sm" style="background:var(--red-light);color:var(--red);border-color:#f5b8b4" onclick="eliminarFecha('${f.id}','${f.nombre}')">Eliminar</button>
+        </div>`;
+      document.getElementById("listaFechas").appendChild(div);
+    });
+  } catch(e) { document.getElementById("loadingFechas").innerHTML="Error al cargar fechas."; }
+}
+
+async function activarFecha(id) {
+  const r = await apiPost({ action:"activarFecha", id });
+  if (r.ok) { alerta("✔ Fecha activada.", "success"); await cargarTodasFechas(); cargarFechaActivaAdmin(); }
+  else alerta("Error: "+r.error,"error");
+}
+async function desactivarFecha(id) {
+  const r = await apiPost({ action:"desactivarFecha", id });
+  if (r.ok) { alerta("Fecha desactivada.", "info"); await cargarTodasFechas(); cargarFechaActivaAdmin(); }
+  else alerta("Error: "+r.error,"error");
+}
+async function eliminarFecha(id, nombre) {
+  if (!confirm(`¿Eliminar "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  const r = await apiPost({ action:"eliminarFecha", id });
+  if (r.ok) { alerta("Fecha eliminada.", "success"); cargarTodasFechas(); }
+  else alerta("Error: "+r.error,"error");
+}
+
+// ── NUEVA FECHA ───────────────────────────────────────
+function agregarPartido() {
+  const i = contPart++;
+  const div = document.createElement("div");
+  div.className = "partido-editor"; div.id = "pe_"+i;
+  div.innerHTML = `
+    <input type="text" placeholder="Local" id="eqA_${i}">
+    <span class="vs-label">vs</span>
+    <input type="text" placeholder="Visitante" id="eqB_${i}">
+    <button class="btn-remove" onclick="document.getElementById('pe_${i}').remove()">×</button>`;
+  document.getElementById("partidosEditor").appendChild(div);
+}
+function limpiarFormulario() {
+  ["nombreFecha","precioFecha","aliasFecha","linkMPFecha"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("pozoPrevioFecha").value="0";
+  document.getElementById("partidosEditor").innerHTML="";
+  contPart=0;
+}
+async function crearFecha() {
+  const nombre = document.getElementById("nombreFecha").value.trim();
+  const precio = document.getElementById("precioFecha").value;
+  if (!nombre) { alerta("Ingresá un nombre.", "error"); return; }
+  if (!precio)  { alerta("Ingresá el precio de entrada.", "error"); return; }
+  const editors = document.querySelectorAll(".partido-editor");
+  if (!editors.length) { alerta("Agregá al menos un partido.", "error"); return; }
+  let partidos = []; let invalido = false;
+  editors.forEach(row => {
+    const i = row.id.replace("pe_","");
+    const a = document.getElementById("eqA_"+i)?.value.trim();
+    const b = document.getElementById("eqB_"+i)?.value.trim();
+    if (!a||!b) invalido=true; else partidos.push([a,b]);
+  });
+  if (invalido) { alerta("Completá todos los equipos.", "error"); return; }
+  const r = await apiPost({
+    action:"crearFecha", nombre, partidos,
+    precio: Number(precio),
+    alias:  document.getElementById("aliasFecha").value.trim(),
+    linkMP: document.getElementById("linkMPFecha").value.trim(),
+    pozoPrevio: Number(document.getElementById("pozoPrevioFecha").value||0)
+  });
+  if (r.ok) { alerta("✔ Fecha creada.", "success"); limpiarFormulario(); cargarTodasFechas(); }
+  else alerta("Error: "+r.error,"error");
+}
+
+// ── PAGOS ─────────────────────────────────────────────
+async function cargarFechaActivaAdmin() {
+  fechaActiva = null;
+  const activa = todasFechas.find(f=>f.activa===true||f.activa==="TRUE");
+  fechaActiva  = activa || null;
+  // Resultados tab
+  if (!fechaActiva) {
+    document.getElementById("sinFechaActivaRes").style.display    = "block";
+    document.getElementById("contenidoResultados").style.display   = "none";
+    document.getElementById("fechaActivaNombreRes").textContent    = "Sin fecha activa";
+  } else {
+    document.getElementById("fechaActivaNombreRes").textContent    = fechaActiva.nombre;
+    document.getElementById("sinFechaActivaRes").style.display     = "none";
+    document.getElementById("contenidoResultados").style.display   = "block";
+    renderResultadosInputs();
+  }
+}
+
+async function cargarPagos() {
+  if (!fechaActiva) {
+    document.getElementById("loadingPagos").style.display = "none";
+    document.getElementById("listaPagos").innerHTML = '<p style="color:var(--text-muted);font-size:.9rem;padding:1rem 0">No hay fecha activa.</p>';
+    return;
+  }
+  document.getElementById("loadingPagos").style.display = "block";
+  document.getElementById("listaPagos").innerHTML = "";
+  try {
+    const prons = await api({ action:"getPronosticos", fechaId:fechaActiva.id });
+    const precio = Number(fechaActiva.precio||0);
+    const pozoPrev = Number(fechaActiva.pozoPrevio||0);
+    const pagados  = prons.filter(p=>p.pagado===true||p.pagado==="TRUE");
+    const pozoFecha= pagados.length * precio;
+    const pozoTotal= pozoFecha + pozoPrev;
+    // Pozo banner
+    document.getElementById("pozoCurrent").style.display = "flex";
+    document.getElementById("pozoEstimado").textContent  = "$"+pozoTotal.toLocaleString("es-AR");
+    document.getElementById("pozoSub").textContent       = `${pagados.length} pagados × $${precio.toLocaleString("es-AR")} + $${pozoPrev.toLocaleString("es-AR")} acumulado`;
+    document.getElementById("premiosEstimados").innerHTML = `
+      🥇 Premio 12 aciertos: <strong>$${Math.round(pozoTotal*.7).toLocaleString("es-AR")}</strong><br>
+      🥈 2° lugar: <strong>$${Math.round(pozoFecha*.2).toLocaleString("es-AR")}</strong><br>
+      🏦 Organización: <strong>$${Math.round(pozoFecha*.1).toLocaleString("es-AR")}</strong>`;
+    document.getElementById("pagadosBadge").textContent = pagados.length+" pagados / "+prons.length+" total";
+    document.getElementById("loadingPagos").style.display = "none";
+    if (prons.length===0) {
+      document.getElementById("listaPagos").innerHTML = '<p style="color:var(--text-muted);font-size:.9rem;padding:1rem 0">Sin pronósticos aún.</p>';
+      return;
+    }
+    prons.sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre)));
+    prons.forEach(p => {
+      const pago = p.pagado===true||p.pagado==="TRUE";
+      const row  = document.createElement("div");
+      row.className = "pago-row";
+      row.innerHTML = `
+        <div class="pago-info">
+          <strong>${p.nombre}</strong>
+          <span>DNI: ****${p.dni}</span>
+        </div>
+        <span class="badge ${pago?"badge-green":"badge-red"}">${pago?"✔ Pagado":"✗ Pendiente"}</span>
+        <button class="btn btn-sm ${pago?"btn-neutral":"btn-primary"}" onclick="togglePago('${p.dni}','${p.nombre}',${!pago})">
+          ${pago?"Desmarcar":"✔ Confirmar pago"}
+        </button>`;
+      document.getElementById("listaPagos").appendChild(row);
+    });
+  } catch(e) { document.getElementById("loadingPagos").innerHTML="Error al cargar."; }
+}
+
+async function togglePago(dni, nombre, pagado) {
+  const r = await apiPost({
+    action:"confirmarPago", fechaId:fechaActiva.id,
+    dni, nombre, pagado, monto:fechaActiva.precio, metodo:"manual", confirmadoPor:"admin"
+  });
+  if (r.ok) { alerta(pagado?"✔ Pago confirmado.":"Pago desmarcado.","success"); cargarPagos(); }
+  else alerta("Error: "+r.error,"error");
+}
+
+// ── RESULTADOS ────────────────────────────────────────
+function renderResultadosInputs() {
+  const div = document.getElementById("resultadosInputs");
+  div.innerHTML = "";
+  const partidos = typeof fechaActiva.partidos==="string"
+    ?JSON.parse(fechaActiva.partidos||"[]"):fechaActiva.partidos||[];
+  const resGuard = typeof fechaActiva.resultados==="string"
+    ?JSON.parse(fechaActiva.resultados||"[]"):fechaActiva.resultados||[];
+  partidos.forEach((p,i)=>{
+    const vA=resGuard[i]?resGuard[i][0]:"", vB=resGuard[i]?resGuard[i][1]:"";
+    const row=document.createElement("div");
+    row.className="partido-resultado";
+    row.innerHTML=`
+      <span class="equipo-res left">${p[0]}</span>
+      <input class="score-input" type="number" min="0" id="rA${i}" placeholder="–" value="${vA}">
+      <span class="dash">–</span>
+      <input class="score-input" type="number" min="0" id="rB${i}" placeholder="–" value="${vB}">
+      <span class="equipo-res right">${p[1]}</span>`;
+    div.appendChild(row);
+  });
+}
+
+async function bloquearFecha() {
+  if (!fechaActiva) return;
+  const r = await apiPost({ action:"bloquearFecha", id:fechaActiva.id });
+  if (r.ok) { alerta("🔒 Apuestas cerradas.","warning"); fechaActiva.bloqueado=true; }
+}
+async function desbloquearFecha() {
+  if (!fechaActiva) return;
+  const r = await apiPost({ action:"desbloquearFecha", id:fechaActiva.id });
+  if (r.ok) { alerta("🔓 Apuestas reabiertas.","success"); fechaActiva.bloqueado=false; }
+}
+
+async function guardarResultados() {
+  if (!fechaActiva) return;
+  const partidos = typeof fechaActiva.partidos==="string"
+    ?JSON.parse(fechaActiva.partidos||"[]"):fechaActiva.partidos||[];
+  let resultados=[]; let incompleto=false;
+  partidos.forEach((_,i)=>{
+    const a=document.getElementById("rA"+i)?.value;
+    const b=document.getElementById("rB"+i)?.value;
+    if(a===""||b==="")incompleto=true;
+    resultados.push([a,b]);
+  });
+  if(incompleto){alerta("Completá todos los resultados.","error");return;}
+  const r = await apiPost({ action:"guardarResultados", fechaId:fechaActiva.id, resultados });
+  if (r.ok) {
+    resultadoActual = r;
+    let msg = "✔ Tabla calculada. ";
+    msg += r.ganador12 ? `🥇 Ganador 12: ${r.ganador12} ($${r.monto70?.toLocaleString("es-AR")})` : "Sin ganador de 12 — pozo acumulado: $"+r.pozoAcumulado?.toLocaleString("es-AR");
+    if (r.ganadorSegundo) msg += ` · 🥈 2°: ${r.ganadorSegundo}`;
+    alerta(msg, "success");
+    await cargarTodasFechas();
+    cambiarTab("tabla");
+  } else alerta("Error: "+r.error,"error");
+}
+
+// ── TABLA ─────────────────────────────────────────────
+async function cargarTablaAdmin() {
+  document.getElementById("loadingTabla").style.display  = "block";
+  document.getElementById("tablaPos").style.display      = "none";
+  document.getElementById("sinDatosTabla").style.display = "none";
+  document.getElementById("panelPremios").style.display  = "none";
+  if (!fechaActiva) {
+    document.getElementById("loadingTabla").style.display  = "none";
+    document.getElementById("sinDatosTabla").style.display = "block";
+    document.getElementById("sinDatosTabla").textContent   = "No hay fecha activa.";
+    return;
+  }
+  document.getElementById("tablaBadge").textContent = fechaActiva.nombre;
+  const resultados = typeof fechaActiva.resultados==="string"
+    ?JSON.parse(fechaActiva.resultados||"[]"):fechaActiva.resultados||[];
+  if(!resultados||resultados.length===0){
+    document.getElementById("loadingTabla").style.display  = "none";
+    document.getElementById("sinDatosTabla").style.display = "block";
+    document.getElementById("sinDatosTabla").textContent   = "Los resultados aún no fueron cargados.";
+    return;
+  }
+  try {
+    const prons = await api({ action:"getPronosticos", fechaId:fechaActiva.id });
+    const pagados = prons.filter(p=>p.pagado===true||p.pagado==="TRUE");
+    const tabla = pagados.map(j=>{
+      const datos=typeof j.datos==="string"?JSON.parse(j.datos):j.datos||[];
+      let puntos=0, aciertos=0;
+      datos.forEach((d,i)=>{
+        const prA=parseInt(d[0]),prB=parseInt(d[1]);
+        const rA=parseInt(resultados[i]?.[0]),rB=parseInt(resultados[i]?.[1]);
+        if(prA===rA&&prB===rB){puntos+=3;aciertos++;}
+        else if((prA>prB&&rA>rB)||(prA<prB&&rA<rB)||(prA===prB&&rA===rB))puntos+=1;
+      });
+      return{nombre:j.nombre,dni:j.dni,puntos,aciertos};
+    }).sort((a,b)=>b.puntos-a.puntos);
+
+    const medallas=["🥇","🥈","🥉"];
+    document.getElementById("tablaBody").innerHTML = tabla.length===0
+      ?'<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--text-muted)">Sin pronósticos pagos.</td></tr>'
+      :tabla.map((j,i)=>`<tr class="${i===0?"top1":i===1?"top2":i===2?"top3":""}">
+          <td>${medallas[i]||i+1}</td><td>${j.nombre}</td>
+          <td style="color:var(--text-muted);font-size:.88rem">${j.dni}</td>
+          <td style="text-align:center">${j.aciertos}/12</td>
+          <td class="pts">${j.puntos}</td></tr>`).join("");
+
+    document.getElementById("loadingTabla").style.display = "none";
+    document.getElementById("tablaPos").style.display     = "table";
+
+    // Premios
+    if (resultadoActual) {
+      const precio=Number(fechaActiva.precio||0);
+      const pozoT=pagados.length*precio+Number(fechaActiva.pozoPrevio||0);
+      document.getElementById("panelPremios").style.display="block";
+      document.getElementById("listaPremios").innerHTML=`
+        <div class="premio-row">
+          <div class="premio-label">🥇 Premio 12 aciertos ${resultadoActual.ganador12?"→ "+resultadoActual.ganador12:"(VACANTE — acumula)"}</div>
+          <div class="premio-monto">${resultadoActual.ganador12?"$"+Math.round(pozoT*.7).toLocaleString("es-AR"):"$"+resultadoActual.pozoAcumulado?.toLocaleString("es-AR")+" →"}</div>
+        </div>
+        <div class="premio-row">
+          <div class="premio-label">🥈 2° lugar ${resultadoActual.ganadorSegundo?"→ "+resultadoActual.ganadorSegundo:""}</div>
+          <div class="premio-monto">$${resultadoActual.monto20?.toLocaleString("es-AR")}</div>
+        </div>
+        <div class="premio-row">
+          <div class="premio-label">🏦 Organización</div>
+          <div class="premio-monto">$${resultadoActual.monto10?.toLocaleString("es-AR")}</div>
+        </div>`;
+    }
+  } catch(e){ document.getElementById("loadingTabla").innerHTML="Error al cargar tabla."; }
+}
+
+// ── HISTORIAL ─────────────────────────────────────────
+async function cargarHistorial() {
+  document.getElementById("loadingHistorial").style.display="block";
+  document.getElementById("listaHistorial").innerHTML="";
+  try {
+    const resultados = await api({ action:"getResultados" });
+    const fechas     = todasFechas;
+    document.getElementById("loadingHistorial").style.display="none";
+    if(!resultados||resultados.length===0){
+      document.getElementById("listaHistorial").innerHTML='<p style="color:var(--text-muted);font-size:.9rem">Sin historial aún.</p>';
+      return;
+    }
+    resultados.slice().reverse().forEach(r=>{
+      const f = fechas.find(x=>x.id===r.fechaId)||{nombre:r.fechaId};
+      const div=document.createElement("div");
+      div.className="hist-item";
+      div.innerHTML=`
+        <strong>${f.nombre||r.fechaId}</strong>
+        <span>
+          🥇 12 aciertos: ${r.ganador12==="NADIE"?"<em>Nadie — pozo acumulado</em>":r.ganador12+" ($"+Number(r.monto70||0).toLocaleString("es-AR")+")"}
+          · 🥈 2°: ${r.ganadorSegundo||"—"} ($${Number(r.monto20||0).toLocaleString("es-AR")})
+          · 🏦 Org: $${Number(r.monto10||0).toLocaleString("es-AR")}
+        </span>`;
+      document.getElementById("listaHistorial").appendChild(div);
+    });
+  } catch(e){ document.getElementById("loadingHistorial").innerHTML="Error al cargar historial."; }
+}
+
+// ── Init: 3 partidos por defecto al abrir pestaña Nueva
+document.getElementById("tabNueva").addEventListener("click",()=>{
+  if(document.getElementById("partidosEditor").children.length===0){
+    for(let i=0;i<3;i++)agregarPartido();
+  }
+});
+</script>
+</body>
+</html>
