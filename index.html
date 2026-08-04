@@ -161,7 +161,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDx4zVBz8rs2IbSOLc6RX8ae0aycYZlUD8bTSukT5Pbz5doj-N2jvcJzM5PFqV_5YAOw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynyJVi6MTaJfk0YRGo8VIaTmvXDfAbJBE6irw1emHEHq6GAs5F5D5rnJ1EE_zyAJyjOw/exec";
 
 let fechaActiva = null;
 let bloqueado   = false;
@@ -172,10 +172,8 @@ async function api(params) {
   return r.json();
 }
 async function apiPost(body) {
-  const r = await fetch(SCRIPT_URL, {
-    method:"POST", body: JSON.stringify(body),
-    headers:{"Content-Type":"application/json"}
-  });
+  const params = new URLSearchParams({ payload: JSON.stringify(body) }).toString();
+  const r = await fetch(SCRIPT_URL + "?" + params);
   return r.json();
 }
 
